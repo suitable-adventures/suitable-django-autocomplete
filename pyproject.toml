@@ -1,12 +1,12 @@
 [project]
 name = "suitable-django-autocomplete"
-version = "0.1.0"
+version = "0.1.2"
 description = "Modern Django autocomplete widget using web components"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "Johan Lundberg", email = "johan@example.com"},
+    {name = "Johan Valentini Jensen", email = "johan@valentini.dk"},
 ]
 keywords = ["django", "autocomplete", "widget", "web-components", "forms"]
 classifiers = [
@@ -33,10 +33,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/johan/suitable-django-autocomplete"
-Repository = "https://github.com/johan/suitable-django-autocomplete"
-Documentation = "https://github.com/johan/suitable-django-autocomplete#readme"
-"Bug Tracker" = "https://github.com/johan/suitable-django-autocomplete/issues"
+Homepage = "https://github.com/suitable-adventures/suitable-django-autocomplete"
+Repository = "https://github.com/suitable-adventures/suitable-django-autocomplete"
+Documentation = "https://github.com/suitable-adventures/suitable-django-autocomplete#readme"
+"Bug Tracker" = "https://github.com/suitable-adventures/suitable-django-autocomplete/issues"
 
 [project.optional-dependencies]
 dev = [
