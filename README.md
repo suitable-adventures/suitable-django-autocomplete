@@ -83,11 +83,10 @@ class OrderForm(forms.Form):
 ```html
 <!-- your_template.html -->
 <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <!-- This loads the required CSS and JavaScript -->
-    {{ form.media }}
-    <button type="submit">Submit</button>
+  {% csrf_token %} {{ form.as_p }}
+  <!-- This loads the required CSS and JavaScript -->
+  {{ form.media }}
+  <button type="submit">Submit</button>
 </form>
 ```
 
@@ -103,7 +102,7 @@ from suitable_django_autocomplete import ModelAutocompleteView
 class UserAutocompleteView(ModelAutocompleteView):
     model = User
     search_fields = ['username', 'first_name', 'last_name', 'email']
-    
+
     def get_queryset(self):
         # Optional: add custom filtering
         return super().get_queryset().filter(is_active=True)
@@ -117,7 +116,7 @@ class TaskForm(forms.ModelForm):
         url='/autocomplete/users/',
         attrs={'placeholder': 'Search for a user...'}
     )
-    
+
     class Meta:
         model = Task
         fields = ['title', 'assigned_to']
@@ -131,12 +130,12 @@ class TaskForm(forms.ModelForm):
 class ProductAutocompleteView(ModelAutocompleteView):
     model = Product
     search_fields = ['name', 'sku', 'category__name']
-    
+
     def get_queryset(self):
         qs = super().get_queryset()
         # Only show products in stock
         return qs.filter(stock__gt=0)
-    
+
     def get_result_label(self, obj):
         # Customize how results are displayed
         return f"{obj.name} (SKU: {obj.sku})"
@@ -149,38 +148,38 @@ The widget uses semantic HTML and can be styled with CSS:
 ```css
 /* Custom styling example */
 .autocomplete-container {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 
 .autocomplete-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 .autocomplete-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-top: none;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
 }
 
 .autocomplete-result {
-    padding: 8px 12px;
-    cursor: pointer;
+  padding: 8px 12px;
+  cursor: pointer;
 }
 
 .autocomplete-result:hover,
 .autocomplete-result[aria-selected="true"] {
-    background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 ```
 
@@ -193,7 +192,7 @@ The widget uses semantic HTML and can be styled with CSS:
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.10+
 - Django 4.2+
 
 ## Contributing
