@@ -192,7 +192,7 @@ The widget uses semantic HTML and can be styled with CSS:
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.9+
 - Django 4.2+
 
 ## Contributing
