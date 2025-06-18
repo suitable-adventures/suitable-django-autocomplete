@@ -1,3 +1,4 @@
+{% load static %}
 <autocomplete-input endpoint="{{ widget.url }}" name="{{ widget.name }}" {% if widget.attrs.id %}id="{{ widget.attrs.id }}"{% endif %}>
     <template shadowrootmode="open">
         <style>
@@ -94,3 +95,4 @@
         <div class="results"></div>
     </template>
 </autocomplete-input>
+<script type="module" src="{% static 'suitable_django_autocomplete/autocomplete.js' %}"></script>
