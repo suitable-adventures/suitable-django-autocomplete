@@ -50,9 +50,22 @@ class ModelAutocompleteView(AutocompleteView):
     def format_result(self, obj):
         """
         Format a model instance for the autocomplete response.
+        Returns a dict with 'value' (obj.id) and 'label' (first search field).
         Override to customize the output format.
         """
-        return str(obj)
+        search_fields = self.get_search_fields()
+        
+        # Get the value for the label from the first search field
+        if search_fields:
+            label_field = search_fields[0]
+            label_value = getattr(obj, label_field, str(obj))
+        else:
+            label_value = str(obj)
+        
+        return {
+            'value': str(obj.id),
+            'label': str(label_value),
+        }
     
     def get_results(self, query):
         """Search the model and return results."""
