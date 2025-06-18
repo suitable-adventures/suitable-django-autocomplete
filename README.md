@@ -10,7 +10,7 @@ A modern, accessible autocomplete widget for Django 4.2+ built with web componen
 
 - 🎯 **Zero dependencies** - No jQuery, no framework lock-in
 - ♿ **Fully accessible** - ARIA compliant with keyboard navigation
-- 🚀 **Modern web components** - Uses native browser APIs
+- 🚀 **Web components** - Uses native browser APIs
 - 🔍 **Smart search** - Debounced search with loading states
 - 🎨 **Customizable** - Easy to style and extend
 - 📱 **Mobile friendly** - Works great on touch devices

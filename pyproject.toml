@@ -1,7 +1,7 @@
 [project]
 name = "suitable-django-autocomplete"
 version = "0.1.7"
-description = "Modern Django autocomplete widget using web components"
+description = "A suitable Django autocomplete widget using web components"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}

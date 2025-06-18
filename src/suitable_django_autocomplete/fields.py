@@ -5,7 +5,7 @@ from .widgets import AutocompleteWidget
 class AutocompleteField(forms.CharField):
     """Form field that uses the AutocompleteWidget by default."""
     
-    def __init__(self, *args, url=None, min_length=2, debounce_delay=300, **kwargs):
+    def __init__(self, *args, url=None, min_length=2, debounce_delay=300, attrs=None, **kwargs):
         self.url = url
         self.min_length = min_length
         self.debounce_delay = debounce_delay
@@ -15,7 +15,8 @@ class AutocompleteField(forms.CharField):
             kwargs['widget'] = AutocompleteWidget(
                 url=url,
                 min_length=min_length,
-                debounce_delay=debounce_delay
+                debounce_delay=debounce_delay,
+                attrs=attrs
             )
         
         super().__init__(*args, **kwargs)
@@ -24,7 +25,7 @@ class AutocompleteField(forms.CharField):
 class ModelAutocompleteField(forms.ModelChoiceField):
     """Model choice field that uses the AutocompleteWidget."""
     
-    def __init__(self, queryset, *args, url=None, min_length=2, debounce_delay=300, **kwargs):
+    def __init__(self, queryset, *args, url=None, min_length=2, debounce_delay=300, attrs=None, **kwargs):
         self.url = url
         self.min_length = min_length
         self.debounce_delay = debounce_delay
@@ -34,7 +35,8 @@ class ModelAutocompleteField(forms.ModelChoiceField):
             kwargs['widget'] = AutocompleteWidget(
                 url=url,
                 min_length=min_length,
-                debounce_delay=debounce_delay
+                debounce_delay=debounce_delay,
+                attrs=attrs
             )
         
         super().__init__(queryset, *args, **kwargs)

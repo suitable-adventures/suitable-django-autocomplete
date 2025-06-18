@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 
 
 class AutocompleteWidget(forms.TextInput):
-    """Modern autocomplete widget for Django forms using web components."""
+    """A suitable autocomplete widget for Django forms using web components."""
 
     template_name = "suitable_django_autocomplete/autocomplete.html"
 
