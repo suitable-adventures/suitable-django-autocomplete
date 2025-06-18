@@ -8,6 +8,9 @@ class AutocompleteInput extends HTMLElement {
         this.minLength = 2;
         this.activeIndex = -1;
         this.results = [];
+        this.selectedItem = null;
+        this.valueField = this.getAttribute('data-value-field') || 'value';
+        this.labelField = this.getAttribute('data-label-field') || 'label';
         
         this._internals = this.attachInternals();
         
@@ -16,6 +19,7 @@ class AutocompleteInput extends HTMLElement {
         
         this.setupAccessibility();
         this.setupEventListeners();
+        this.handleInitialValue();
     }
     
     setupAccessibility() {
@@ -40,7 +44,11 @@ class AutocompleteInput extends HTMLElement {
     setupEventListeners() {
         this.input.addEventListener('input', (e) => {
             this.handleInput(e.target.value);
-            this.updateFormValue(e.target.value);
+            // Clear selected item if user types manually
+            if (this.selectedItem && e.target.value !== this.getItemLabel(this.selectedItem)) {
+                this.selectedItem = null;
+                this.updateFormValue('');
+            }
         });
         
         this.input.addEventListener('keydown', (e) => {
@@ -58,7 +66,14 @@ class AutocompleteInput extends HTMLElement {
             if (e.relatedTarget && this.resultsContainer.contains(e.relatedTarget)) {
                 return;
             }
-            setTimeout(() => this.hideResults(), 150);
+            setTimeout(() => {
+                this.hideResults();
+                // Clear value if no valid selection
+                if (!this.selectedItem && this.input.value) {
+                    this.input.value = '';
+                    this.updateFormValue('');
+                }
+            }, 150);
         });
         
         document.addEventListener('click', (e) => {
@@ -129,37 +144,44 @@ class AutocompleteInput extends HTMLElement {
         }
         
         const html = results.map((result, index) => {
-            const displayText = typeof result === 'string' ? result : result.name || result.title || result.text || JSON.stringify(result);
+            const displayText = this.getItemLabel(result);
+            const value = this.getItemValue(result);
             const optionId = `${this.listboxId}-option-${index}`;
             return `<div class="result-item" 
                          role="option" 
                          id="${optionId}" 
-                         data-value="${displayText}" 
                          data-index="${index}"
                          tabindex="-1"
-                         aria-selected="false">${displayText}</div>`;
+                         aria-selected="false">${this.escapeHtml(displayText)}</div>`;
         }).join('');
         
         this.resultsContainer.innerHTML = html;
         
-        this.resultsContainer.querySelectorAll('.result-item').forEach(item => {
+        this.resultsContainer.querySelectorAll('.result-item').forEach((item, index) => {
             item.addEventListener('click', () => {
-                this.selectResult(item.dataset.value);
+                this.selectResultByIndex(index);
             });
         });
         
         this.showResults();
     }
     
-    selectResult(value) {
-        this.input.value = value;
-        this.updateFormValue(value);
-        this.hideResults();
-        
-        this.dispatchEvent(new CustomEvent('autocomplete-select', {
-            detail: { value },
-            bubbles: true
-        }));
+    selectResultByIndex(index) {
+        if (index >= 0 && index < this.results.length) {
+            const item = this.results[index];
+            this.selectedItem = item;
+            const label = this.getItemLabel(item);
+            const value = this.getItemValue(item);
+            
+            this.input.value = label;
+            this.updateFormValue(value);
+            this.hideResults();
+            
+            this.dispatchEvent(new CustomEvent('autocomplete-select', {
+                detail: { value, label, item },
+                bubbles: true
+            }));
+        }
     }
     
     updateFormValue(value) {
@@ -168,15 +190,6 @@ class AutocompleteInput extends HTMLElement {
     
     get name() {
         return this.getAttribute('name');
-    }
-    
-    get value() {
-        return this.input.value;
-    }
-    
-    set value(val) {
-        this.input.value = val;
-        this.updateFormValue(val);
     }
     
     handleKeyDown(e) {
@@ -258,10 +271,7 @@ class AutocompleteInput extends HTMLElement {
     
     selectActiveResult() {
         if (this.activeIndex >= 0 && this.results[this.activeIndex]) {
-            const value = typeof this.results[this.activeIndex] === 'string' 
-                ? this.results[this.activeIndex] 
-                : this.results[this.activeIndex].name || this.results[this.activeIndex].title || this.results[this.activeIndex].text;
-            this.selectResult(value);
+            this.selectResultByIndex(this.activeIndex);
         }
     }
     
@@ -275,6 +285,62 @@ class AutocompleteInput extends HTMLElement {
         this.input.setAttribute('aria-expanded', 'false');
         this.input.removeAttribute('aria-activedescendant');
         this.activeIndex = -1;
+    }
+    
+    getItemLabel(item) {
+        if (typeof item === 'string') {
+            return item;
+        }
+        // Try common label fields
+        return item[this.labelField] || item.label || item.name || item.title || item.text || String(item.value || '');
+    }
+    
+    getItemValue(item) {
+        if (typeof item === 'string') {
+            return item;
+        }
+        // Try common value fields
+        return item[this.valueField] || item.value || item.id || this.getItemLabel(item);
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    handleInitialValue() {
+        const initialValue = this.getAttribute('value');
+        const displayValue = this.getAttribute('data-display-value');
+        
+        if (initialValue) {
+            this._internals.setFormValue(initialValue);
+            if (displayValue) {
+                this.input.value = displayValue;
+                // Create a temporary selected item
+                this.selectedItem = {
+                    [this.valueField]: initialValue,
+                    [this.labelField]: displayValue
+                };
+            }
+        }
+    }
+    
+    // Override value getter/setter to handle initial binding
+    get value() {
+        return this.selectedItem ? this.getItemValue(this.selectedItem) : '';
+    }
+    
+    set value(val) {
+        if (val) {
+            // Store the initial value and try to resolve it when we get results
+            this.initialValue = val;
+            this._internals.setFormValue(val);
+        } else {
+            this.input.value = '';
+            this.selectedItem = null;
+            this.updateFormValue('');
+        }
     }
 }
 

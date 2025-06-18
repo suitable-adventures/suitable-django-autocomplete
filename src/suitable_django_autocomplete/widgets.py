@@ -7,10 +7,14 @@ class AutocompleteWidget(forms.TextInput):
 
     template_name = "suitable_django_autocomplete/autocomplete.html"
 
-    def __init__(self, url=None, attrs=None, min_length=2, debounce_delay=300):
+    def __init__(self, url=None, attrs=None, min_length=2, debounce_delay=300,
+                 value_field='value', label_field='label', initial_display_value=None):
         self.url = url
         self.min_length = min_length
         self.debounce_delay = debounce_delay
+        self.value_field = value_field
+        self.label_field = label_field
+        self.initial_display_value = initial_display_value
         super().__init__(attrs)
 
     def get_context(self, name, value, attrs):
@@ -20,6 +24,9 @@ class AutocompleteWidget(forms.TextInput):
                 "url": self.url or reverse_lazy("autocomplete"),
                 "min_length": self.min_length,
                 "debounce_delay": self.debounce_delay,
+                "value_field": self.value_field,
+                "label_field": self.label_field,
+                "initial_display_value": self.initial_display_value,
             }
         )
         return context

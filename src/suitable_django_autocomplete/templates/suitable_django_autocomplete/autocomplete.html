@@ -1,5 +1,12 @@
 {% load static %}
-<autocomplete-input endpoint="{{ widget.url }}" name="{{ widget.name }}" {% if widget.attrs.id %}id="{{ widget.attrs.id }}"{% endif %}>
+<autocomplete-input 
+    endpoint="{{ widget.url }}" 
+    name="{{ widget.name }}" 
+    {% if widget.attrs.id %}id="{{ widget.attrs.id }}"{% endif %}
+    {% if widget.value %}value="{{ widget.value }}"{% endif %}
+    {% if widget.initial_display_value %}data-display-value="{{ widget.initial_display_value }}"{% endif %}
+    data-value-field="{{ widget.value_field }}"
+    data-label-field="{{ widget.label_field }}">
     <template shadowrootmode="open">
         <style>
             :host {
