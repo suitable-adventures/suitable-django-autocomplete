@@ -5,10 +5,12 @@ from .widgets import AutocompleteWidget
 class AutocompleteField(forms.CharField):
     """Form field that uses the AutocompleteWidget by default."""
     
-    def __init__(self, *args, url=None, min_length=2, debounce_delay=300, attrs=None, **kwargs):
+    def __init__(self, *args, url=None, min_length=2, debounce_delay=300, attrs=None, 
+                 host_attrs=None, **kwargs):
         self.url = url
         self.min_length = min_length
         self.debounce_delay = debounce_delay
+        self.host_attrs = host_attrs
         
         # Set the widget if not already specified
         if 'widget' not in kwargs:
@@ -16,7 +18,8 @@ class AutocompleteField(forms.CharField):
                 url=url,
                 min_length=min_length,
                 debounce_delay=debounce_delay,
-                attrs=attrs
+                attrs=attrs,
+                host_attrs=host_attrs
             )
         
         super().__init__(*args, **kwargs)
@@ -25,10 +28,12 @@ class AutocompleteField(forms.CharField):
 class ModelAutocompleteField(forms.ModelChoiceField):
     """Model choice field that uses the AutocompleteWidget."""
     
-    def __init__(self, queryset, *args, url=None, min_length=2, debounce_delay=300, attrs=None, **kwargs):
+    def __init__(self, queryset, *args, url=None, min_length=2, debounce_delay=300, attrs=None, 
+                 host_attrs=None, **kwargs):
         self.url = url
         self.min_length = min_length
         self.debounce_delay = debounce_delay
+        self.host_attrs = host_attrs
         
         # Set the widget if not already specified
         if 'widget' not in kwargs:
@@ -36,7 +41,8 @@ class ModelAutocompleteField(forms.ModelChoiceField):
                 url=url,
                 min_length=min_length,
                 debounce_delay=debounce_delay,
-                attrs=attrs
+                attrs=attrs,
+                host_attrs=host_attrs
             )
         
         super().__init__(queryset, *args, **kwargs)

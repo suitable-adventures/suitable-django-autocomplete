@@ -9,6 +9,9 @@
     data-label-field="{{ widget.label_field }}"
     {% for attr_name, attr_value in widget.attrs.items %}
         {% if attr_name|slice:":5" == "aria-" %}{{ attr_name }}="{{ attr_value }}"{% endif %}
+    {% endfor %}
+    {% for attr_name, attr_value in widget.host_attrs.items %}
+        {{ attr_name }}="{{ attr_value }}"
     {% endfor %}>
     <template shadowrootmode="open">
         <style>
@@ -116,7 +119,7 @@
                {% endfor %}
                placeholder="{{ widget.attrs.placeholder|default:'Start typing to search...' }}">
         <div class="results"></div>
-        <span role="status" aria-live="polite" class="sr-only"></span>
+        <span class="sr-only"></span>
 
     </template>
 </autocomplete-input>

@@ -11,11 +11,15 @@ class AutocompleteInput extends HTMLElement {
         this.selectedItem = null;
         this.valueField = this.getAttribute('data-value-field') || 'value';
         this.labelField = this.getAttribute('data-label-field') || 'label';
+        this.originalPlaceholder = '';
         
         this._internals = this.attachInternals();
         
         this.input = this.shadowRoot.querySelector('input');
         this.resultsContainer = this.shadowRoot.querySelector('.results');
+        
+        // Store original placeholder
+        this.originalPlaceholder = this.input.getAttribute('placeholder') || '';
         
         // hoist aria from host → internal input for naming & description
         const ariaLabel = this.getAttribute('aria-label');
@@ -24,7 +28,12 @@ class AutocompleteInput extends HTMLElement {
         if (ariaLabel)       { this._internals.ariaLabel = ariaLabel;
                                this.input.setAttribute('aria-label', ariaLabel); }
         if (ariaLabelledBy)  this.input.setAttribute('aria-labelledby', ariaLabelledBy);
-        if (ariaDescribedBy) this.input.setAttribute('aria-describedby', ariaDescribedBy);
+        
+        // Set up aria-describedby to include both external and internal descriptions
+        const describedByIds = [];
+        if (ariaDescribedBy) describedByIds.push(ariaDescribedBy);
+        describedByIds.push(this.statusId);
+        this.input.setAttribute('aria-describedby', describedByIds.join(' '));
 
         this.setupAccessibility();
         this.setupEventListeners();
@@ -35,6 +44,7 @@ class AutocompleteInput extends HTMLElement {
         // Generate unique IDs for ARIA relationships
         this.inputId = `autocomplete-input-${Math.random().toString(36).substr(2, 9)}`;
         this.listboxId = `autocomplete-listbox-${Math.random().toString(36).substr(2, 9)}`;
+        this.statusId = `autocomplete-status-${Math.random().toString(36).substr(2, 9)}`;
         
         // Set ARIA attributes on input
         this.input.setAttribute('id', this.inputId);
@@ -50,6 +60,12 @@ class AutocompleteInput extends HTMLElement {
         this.resultsContainer.setAttribute('id', this.listboxId);
         this.resultsContainer.setAttribute('role', 'listbox');
         this.resultsContainer.setAttribute('aria-label', 'Autocomplete suggestions');
+        
+        // Set up the status element for aria-describedby
+        const statusElement = this.shadowRoot.querySelector('.sr-only');
+        if (statusElement) {
+            statusElement.setAttribute('id', this.statusId);
+        }
     }
     
     setupEventListeners() {
@@ -135,13 +151,15 @@ class AutocompleteInput extends HTMLElement {
     }
     
     showLoading() {
-        this.resultsContainer.innerHTML = '<div class="loading" role="status" aria-live="polite">Loading...</div>';
+        this.resultsContainer.innerHTML = '<div class="loading">Loading...</div>';
         this.showResults();
+        this.updateStatus('Loading suggestions');
     }
     
     showError(message) {
-        this.resultsContainer.innerHTML = `<div class="loading" role="alert">${message}</div>`;
+        this.resultsContainer.innerHTML = `<div class="loading">${message}</div>`;
         this.showResults();
+        this.updateStatus(message);
     }
     
     renderResults(results) {
@@ -150,10 +168,10 @@ class AutocompleteInput extends HTMLElement {
 
         if (results.length === 0) {
             this.resultsContainer.innerHTML =
-                '<div class="loading" role="status" aria-live="polite">No results found</div>';
+                '<div class="loading">No results found</div>';
             this.showResults();
-            // 🔈 announce for SR users
-            this.shadowRoot.querySelector('[role="status"]').textContent = 'No results found';
+            // Update status for aria-describedby
+            this.updateStatus('No results found');
             return;
         }
 
@@ -177,9 +195,8 @@ class AutocompleteInput extends HTMLElement {
 
         this.showResults();
 
-        /* 🔈  live-region announcement (add this line) */
-        this.shadowRoot.querySelector('[role="status"]').textContent =
-            `${this.results.length} suggestion${this.results.length !== 1 ? 's' : ''} available`;
+        // Update status for aria-describedby
+        this.updateStatus(`${this.results.length} suggestion${this.results.length !== 1 ? 's' : ''} available`);
     }
 
     
@@ -295,6 +312,8 @@ class AutocompleteInput extends HTMLElement {
     showResults() {
         this.resultsContainer.style.display = 'block';
         this.setAttribute('aria-expanded', 'true');
+        // Clear placeholder when showing results to avoid confusion
+        this.input.setAttribute('placeholder', '');
     }
     
     hideResults() {
@@ -302,6 +321,17 @@ class AutocompleteInput extends HTMLElement {
         this.setAttribute('aria-expanded', 'false');
         this.input.removeAttribute('aria-activedescendant');
         this.activeIndex = -1;
+        // Restore placeholder when hiding results
+        this.input.setAttribute('placeholder', this.originalPlaceholder);
+        // Clear status
+        this.updateStatus('');
+    }
+    
+    updateStatus(message) {
+        const statusElement = this.shadowRoot.querySelector(`#${this.statusId}`);
+        if (statusElement) {
+            statusElement.textContent = message;
+        }
     }
     
     getItemLabel(item) {
