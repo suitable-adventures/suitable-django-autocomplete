@@ -6,7 +6,10 @@
     {% if widget.value %}value="{{ widget.value }}"{% endif %}
     {% if widget.initial_display_value %}data-display-value="{{ widget.initial_display_value }}"{% endif %}
     data-value-field="{{ widget.value_field }}"
-    data-label-field="{{ widget.label_field }}">
+    data-label-field="{{ widget.label_field }}"
+    {% for attr_name, attr_value in widget.attrs.items %}
+        {% if attr_name|slice:":5" == "aria-" %}{{ attr_name }}="{{ attr_value }}"{% endif %}
+    {% endfor %}>
     <template shadowrootmode="open">
         <style>
             :host {
@@ -90,16 +93,31 @@
                 color: #666;
                 font-style: italic;
             }
+
+            .sr-only {
+                position: absolute !important;
+                width: 1px !important;
+                height: 1px !important;
+                padding: 0 !important;
+                margin: -1px !important;
+                overflow: hidden !important;
+                clip-path: inset(50%) !important;
+                white-space: nowrap !important;
+                border: 0 !important;
+            }
+
         </style>
         
         <input type="text" 
                name="{{ widget.name }}" 
                {% if widget.value %}value="{{ widget.value }}"{% endif %}
                {% for attr_name, attr_value in widget.attrs.items %}
-                   {% if attr_name != 'id' %}{{ attr_name }}="{{ attr_value }}"{% endif %}
+                   {% if attr_name != 'id' and attr_name|slice:":5" != "aria-" %}{{ attr_name }}="{{ attr_value }}"{% endif %}
                {% endfor %}
                placeholder="{{ widget.attrs.placeholder|default:'Start typing to search...' }}">
         <div class="results"></div>
+        <span role="status" aria-live="polite" class="sr-only"></span>
+
     </template>
 </autocomplete-input>
 <script type="module" src="{% static 'suitable_django_autocomplete/autocomplete.js' %}"></script>

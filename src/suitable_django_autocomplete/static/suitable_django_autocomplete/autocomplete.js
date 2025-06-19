@@ -17,6 +17,15 @@ class AutocompleteInput extends HTMLElement {
         this.input = this.shadowRoot.querySelector('input');
         this.resultsContainer = this.shadowRoot.querySelector('.results');
         
+        // hoist aria from host → internal input for naming & description
+        const ariaLabel = this.getAttribute('aria-label');
+        const ariaLabelledBy = this.getAttribute('aria-labelledby');
+        const ariaDescribedBy = this.getAttribute('aria-describedby');
+        if (ariaLabel)       { this._internals.ariaLabel = ariaLabel;
+                               this.input.setAttribute('aria-label', ariaLabel); }
+        if (ariaLabelledBy)  this.input.setAttribute('aria-labelledby', ariaLabelledBy);
+        if (ariaDescribedBy) this.input.setAttribute('aria-describedby', ariaDescribedBy);
+
         this.setupAccessibility();
         this.setupEventListeners();
         this.handleInitialValue();
@@ -29,11 +38,13 @@ class AutocompleteInput extends HTMLElement {
         
         // Set ARIA attributes on input
         this.input.setAttribute('id', this.inputId);
-        this.input.setAttribute('role', 'combobox');
-        this.input.setAttribute('aria-autocomplete', 'list');
-        this.input.setAttribute('aria-expanded', 'false');
-        this.input.setAttribute('aria-controls', this.listboxId);
-        this.input.setAttribute('aria-haspopup', 'listbox');
+        
+        // Put structural ARIA on the host so label → host works
+        this.setAttribute('role', 'combobox');
+        this.setAttribute('aria-autocomplete', 'list');
+        this.setAttribute('aria-expanded', 'false');
+        this.setAttribute('aria-controls', this.listboxId);
+        this.setAttribute('aria-haspopup', 'listbox');
         
         // Set ARIA attributes on results container
         this.resultsContainer.setAttribute('id', this.listboxId);
@@ -136,35 +147,41 @@ class AutocompleteInput extends HTMLElement {
     renderResults(results) {
         this.results = results;
         this.activeIndex = -1;
-        
+
         if (results.length === 0) {
-            this.resultsContainer.innerHTML = '<div class="loading" role="status" aria-live="polite">No results found</div>';
+            this.resultsContainer.innerHTML =
+                '<div class="loading" role="status" aria-live="polite">No results found</div>';
             this.showResults();
+            // 🔈 announce for SR users
+            this.shadowRoot.querySelector('[role="status"]').textContent = 'No results found';
             return;
         }
-        
+
+        // build options ⬇
         const html = results.map((result, index) => {
             const displayText = this.getItemLabel(result);
-            const value = this.getItemValue(result);
-            const optionId = `${this.listboxId}-option-${index}`;
-            return `<div class="result-item" 
-                         role="option" 
-                         id="${optionId}" 
+            const optionId    = `${this.listboxId}-option-${index}`;
+            return `<div class="result-item"
+                         role="option"
+                         id="${optionId}"
                          data-index="${index}"
                          tabindex="-1"
                          aria-selected="false">${this.escapeHtml(displayText)}</div>`;
         }).join('');
-        
+
         this.resultsContainer.innerHTML = html;
-        
-        this.resultsContainer.querySelectorAll('.result-item').forEach((item, index) => {
-            item.addEventListener('click', () => {
-                this.selectResultByIndex(index);
-            });
-        });
-        
+
+        this.resultsContainer.querySelectorAll('.result-item')
+            .forEach((item, index) => item.addEventListener('click',
+                () => this.selectResultByIndex(index)));
+
         this.showResults();
+
+        /* 🔈  live-region announcement (add this line) */
+        this.shadowRoot.querySelector('[role="status"]').textContent =
+            `${this.results.length} suggestion${this.results.length !== 1 ? 's' : ''} available`;
     }
+
     
     selectResultByIndex(index) {
         if (index >= 0 && index < this.results.length) {
@@ -277,12 +294,12 @@ class AutocompleteInput extends HTMLElement {
     
     showResults() {
         this.resultsContainer.style.display = 'block';
-        this.input.setAttribute('aria-expanded', 'true');
+        this.setAttribute('aria-expanded', 'true');
     }
     
     hideResults() {
         this.resultsContainer.style.display = 'none';
-        this.input.setAttribute('aria-expanded', 'false');
+        this.setAttribute('aria-expanded', 'false');
         this.input.removeAttribute('aria-activedescendant');
         this.activeIndex = -1;
     }
