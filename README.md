@@ -199,6 +199,10 @@ The widget uses semantic HTML and can be styled with CSS:
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
+### Releasing New Versions
+
+For maintainers: See [RELEASE.md](RELEASE.md) for the release process. New versions are automatically published to PyPI when a version tag is pushed.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
