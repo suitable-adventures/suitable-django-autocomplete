@@ -76,16 +76,43 @@ class AutocompleteInput extends HTMLElement {
                 this.selectedItem = null;
                 this.updateFormValue('');
             }
+            
+            // Propagate input event to host element
+            this.dispatchEvent(new InputEvent('input', {
+                bubbles: true,
+                cancelable: true,
+                data: e.data,
+                inputType: e.inputType
+            }));
         });
         
         this.input.addEventListener('keydown', (e) => {
             this.handleKeyDown(e);
+            
+            // Propagate keydown event to host element
+            this.dispatchEvent(new KeyboardEvent('keydown', {
+                bubbles: true,
+                cancelable: true,
+                key: e.key,
+                code: e.code,
+                keyCode: e.keyCode,
+                shiftKey: e.shiftKey,
+                ctrlKey: e.ctrlKey,
+                altKey: e.altKey,
+                metaKey: e.metaKey
+            }));
         });
         
-        this.input.addEventListener('focus', () => {
+        this.input.addEventListener('focus', (e) => {
             if (this.input.value.length >= this.minLength) {
                 this.showResults();
             }
+            
+            // Propagate focus event to host element
+            this.dispatchEvent(new FocusEvent('focus', {
+                bubbles: true,
+                cancelable: true
+            }));
         });
         
         this.input.addEventListener('blur', (e) => {
@@ -93,6 +120,14 @@ class AutocompleteInput extends HTMLElement {
             if (e.relatedTarget && this.resultsContainer.contains(e.relatedTarget)) {
                 return;
             }
+            
+            // Propagate blur event to host element
+            this.dispatchEvent(new FocusEvent('blur', {
+                bubbles: true,
+                cancelable: true,
+                relatedTarget: e.relatedTarget
+            }));
+            
             setTimeout(() => {
                 this.hideResults();
                 // Clear value if no valid selection
@@ -101,6 +136,14 @@ class AutocompleteInput extends HTMLElement {
                     this.updateFormValue('');
                 }
             }, 150);
+        });
+        
+        this.input.addEventListener('change', (e) => {
+            // Propagate change event to host element
+            this.dispatchEvent(new Event('change', {
+                bubbles: true,
+                cancelable: true
+            }));
         });
         
         document.addEventListener('click', (e) => {
