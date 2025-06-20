@@ -54,6 +54,8 @@ Additional notes about the release..."
 
 ### 5. Push to GitHub (this triggers the release)
 
+**Note: This step must be run manually by the maintainer:**
+
 ```bash
 git push origin main --tags
 ```
@@ -119,7 +121,7 @@ Bug fixes:
 
 This release improves integration with external libraries."
 
-# 5. Push and trigger automatic release
+# 5. Push and trigger automatic release (run manually)
 git push origin main --tags
 ```
 
