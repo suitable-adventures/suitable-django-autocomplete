@@ -33,6 +33,32 @@ class AutocompleteWidget(forms.TextInput):
             }
         )
         return context
+    
+    def set_initial_display_value_from_instance(self, obj, search_fields=None):
+        """
+        Helper method to set initial_display_value from a model instance.
+        This can be called by ModelAutocompleteField.
+        """
+        if not obj:
+            return
+            
+        # Use search_fields if provided to determine display value
+        if search_fields:
+            first_field = search_fields[0]
+            # Handle related fields (e.g., 'user__username')
+            if '__' in first_field:
+                parts = first_field.split('__')
+                value = obj
+                for part in parts:
+                    value = getattr(value, part, None)
+                    if value is None:
+                        break
+                self.initial_display_value = str(value) if value is not None else str(obj)
+            else:
+                self.initial_display_value = str(getattr(obj, first_field, obj))
+        else:
+            # Fall back to string representation
+            self.initial_display_value = str(obj)
 
     # When migrating to 5.2 only, use this to module load instead of in template. Nice.
     # class Media:

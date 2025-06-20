@@ -1,6 +1,6 @@
 [project]
 name = "suitable-django-autocomplete"
-version = "0.3.2"
+version = "0.4.0"
 description = "A suitable Django autocomplete widget using web components"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -56,3 +56,14 @@ include = [
     "/README.md",
     "/LICENSE",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-django>=4.11.1",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.test_settings"
+python_files = ["tests/test_*.py"]
+addopts = "--tb=short"

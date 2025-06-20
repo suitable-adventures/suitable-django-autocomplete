@@ -122,6 +122,75 @@ class TaskForm(forms.ModelForm):
         fields = ['title', 'assigned_to']
 ```
 
+## Value/Label Pattern for Model Fields
+
+When working with Django model relationships (ForeignKey, OneToOneField), you often need to display user-friendly labels while submitting the actual model ID. The autocomplete widget handles this seamlessly:
+
+```python
+# views.py
+class ProductAutocompleteView(ModelAutocompleteView):
+    model = Product
+    search_fields = ['name', 'sku', 'category']
+    
+    def format_result(self, obj):
+        """Return both the value (ID) and display label."""
+        return {
+            'value': str(obj.id),  # What gets submitted
+            'label': f"{obj.name} - ${obj.price} ({obj.category})"  # What user sees
+        }
+
+# forms.py
+class OrderForm(forms.ModelForm):
+    product = ModelAutocompleteField(
+        queryset=Product.objects.filter(in_stock=True),
+        url='/autocomplete/products/',
+        widget=AutocompleteWidget(
+            # These are the defaults:
+            value_field='value',  # Which field contains the submit value
+            label_field='label'   # Which field contains the display text
+        )
+    )
+    
+    class Meta:
+        model = Order
+        fields = ['product', 'quantity']
+```
+
+### Automatic Initial Display Values ✨
+
+**New Feature**: When you specify `search_fields`, the widget automatically sets user-friendly display values for existing records:
+
+```python
+class OrderForm(forms.ModelForm):
+    customer = ModelAutocompleteField(
+        queryset=User.objects.all(),
+        url='/autocomplete/customers/',
+        search_fields=['first_name', 'last_name', 'email']  # Uses first_name for display
+    )
+    
+    class Meta:
+        model = Order
+        fields = ['customer', 'quantity']
+
+# When editing existing orders, this just works!
+order = Order.objects.get(pk=1)
+form = OrderForm(instance=order)  # Shows customer's first_name automatically
+```
+
+For custom display values, you can still override manually:
+
+```python
+# Custom display value
+form.fields['customer'].widget.initial_display_value = "Custom Label"
+```
+
+The widget automatically:
+- Shows the label text in the input field
+- Submits the ID value with the form
+- Converts the submitted ID back to a model instance
+
+See the [detailed example](docs/model_value_label_example.md) for more complex use cases.
+
 ## Advanced Usage
 
 ### Custom Search Logic
