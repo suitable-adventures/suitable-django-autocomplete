@@ -138,13 +138,6 @@ class AutocompleteInput extends HTMLElement {
             }, 150);
         });
         
-        this.input.addEventListener('change', (e) => {
-            // Propagate change event to host element
-            this.dispatchEvent(new Event('change', {
-                bubbles: true,
-                cancelable: true
-            }));
-        });
         
         document.addEventListener('click', (e) => {
             if (!this.contains(e.target)) {
@@ -244,6 +237,7 @@ class AutocompleteInput extends HTMLElement {
 
     
     selectResultByIndex(index) {
+        console.log("selectResultByIndex", index)
         if (index >= 0 && index < this.results.length) {
             const item = this.results[index];
             this.selectedItem = item;
@@ -257,6 +251,10 @@ class AutocompleteInput extends HTMLElement {
             this.dispatchEvent(new CustomEvent('autocomplete-select', {
                 detail: { value, label, item },
                 bubbles: true
+            }));
+            this.dispatchEvent(new Event('change', {
+                bubbles: true,
+                cancelable: true
             }));
         }
     }
