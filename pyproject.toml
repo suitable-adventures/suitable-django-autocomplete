@@ -1,6 +1,6 @@
 [project]
 name = "suitable-django-autocomplete"
-version = "0.6.0"
+version = "0.6.1"
 description = "A suitable Django autocomplete widget using web components"
 readme = "README.md"
 requires-python = ">=3.9"

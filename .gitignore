@@ -6,5 +6,6 @@ dist/
 wheels/
 *.egg-info
 example_project/
+example_project
 # Virtual environments
 .venv

@@ -1,6 +1,6 @@
 """Modern Django autocomplete widget using web components."""
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 from .widgets import AutocompleteWidget
 from .fields import AutocompleteField, ModelAutocompleteField

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-06-26
+
+### Changed
+
+- **CSS Variables**: Added `--autocomplete-input-height` (default: 40px)
+- **Font Size**: Changed default from 14px to 16px for better mobile usability
+- **Documentation**: Added RELEASE_NOTES_0.6.0.md to document the previous release
+
+### Fixed
+
+- **Development**: Updated .gitignore to handle example_project directory variations
+
 ## [0.6.0] - 2025-06-26
 
 ### Added
