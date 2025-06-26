@@ -117,10 +117,9 @@
         
         <input type="text" 
                part="input"
-               name="{{ widget.name }}" 
                {% if widget.value %}value="{{ widget.value }}"{% endif %}
                {% for attr_name, attr_value in widget.attrs.items %}
-                   {% if attr_name != 'id' and attr_name|slice:":5" != "aria-" %}{{ attr_name }}="{{ attr_value }}"{% endif %}
+                   {% if attr_name != 'id' and attr_name != 'name' and attr_name|slice:":5" != "aria-" %}{{ attr_name }}="{{ attr_value }}"{% endif %}
                {% endfor %}
                placeholder="{{ widget.attrs.placeholder|default:'Start typing to search...' }}">
         <div class="results"></div>
