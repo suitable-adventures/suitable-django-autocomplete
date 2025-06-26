@@ -1,3 +1,4 @@
+from typing import Dict, Any, Optional, List
 from django import forms
 from django.urls import reverse_lazy
 
@@ -7,9 +8,11 @@ class AutocompleteWidget(forms.TextInput):
 
     template_name = "suitable_django_autocomplete/autocomplete.html"
 
-    def __init__(self, url=None, attrs=None, min_length=2, debounce_delay=300,
-                 value_field='value', label_field='label', initial_display_value=None,
-                 host_attrs=None):
+    def __init__(self, url: Optional[str] = None, attrs: Optional[Dict[str, Any]] = None, 
+                 min_length: int = 2, debounce_delay: int = 300,
+                 value_field: str = 'value', label_field: str = 'label', 
+                 initial_display_value: Optional[str] = None,
+                 host_attrs: Optional[Dict[str, Any]] = None) -> None:
         self.url = url
         self.min_length = min_length
         self.debounce_delay = debounce_delay
@@ -19,7 +22,7 @@ class AutocompleteWidget(forms.TextInput):
         self.host_attrs = host_attrs or {}
         super().__init__(attrs)
 
-    def get_context(self, name, value, attrs):
+    def get_context(self, name: str, value: Any, attrs: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         context = super().get_context(name, value, attrs)
         context["widget"].update(
             {
@@ -34,7 +37,7 @@ class AutocompleteWidget(forms.TextInput):
         )
         return context
     
-    def set_initial_display_value_from_instance(self, obj, search_fields=None):
+    def set_initial_display_value_from_instance(self, obj: Any, search_fields: Optional[List[str]] = None) -> None:
         """
         Helper method to set initial_display_value from a model instance.
         This can be called by ModelAutocompleteField.

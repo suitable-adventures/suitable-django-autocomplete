@@ -163,8 +163,13 @@ class AutocompleteInput extends HTMLElement {
         const endpoint = this.getAttribute('endpoint');
         if (!endpoint) {
             console.error('No endpoint attribute specified');
+            this.showError('Configuration error: No endpoint specified');
             return;
         }
+        
+        // Create abort controller for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         try {
             this.showLoading();
@@ -172,17 +177,45 @@ class AutocompleteInput extends HTMLElement {
             const url = new URL(endpoint, window.location.origin);
             url.searchParams.append('q', query);
             
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                signal: controller.signal,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            clearTimeout(timeoutId);
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
+            
+            // Validate response structure
+            if (!data || typeof data !== 'object') {
+                throw new Error('Invalid response format');
+            }
+            
             this.renderResults(data.results || []);
             
         } catch (error) {
-            console.error('Fetch error:', error);
-            this.showError('Failed to fetch results');
+            clearTimeout(timeoutId);
+            
+            if (error.name === 'AbortError') {
+                console.error('Request timeout');
+                this.showError('Request timed out. Please try again.');
+            } else if (error.message.includes('HTTP error')) {
+                console.error('HTTP error:', error);
+                this.showError('Server error. Please try again later.');
+            } else if (error instanceof TypeError) {
+                console.error('Network error:', error);
+                this.showError('Network error. Please check your connection.');
+            } else {
+                console.error('Fetch error:', error);
+                this.showError('Failed to fetch results');
+            }
         }
     }
     

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safari Autocomplete Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        form {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="submit"] {
+            padding: 8px;
+            font-size: 14px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f0f0f0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .info {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Safari Autocomplete Form Submission Test</h1>
+    
+    <div class="info">
+        <strong>Test Instructions:</strong>
+        <ol>
+            <li>Type "test" in the autocomplete field below</li>
+            <li>Select an item from the dropdown</li>
+            <li>Submit the form</li>
+            <li>Check the submitted data - only the ID should be sent, not the display label</li>
+        </ol>
+    </div>
+
+    <form id="testForm" method="GET" action="">
+        <div class="form-group">
+            <label for="regular-input">Regular Input (for comparison):</label>
+            <input type="text" id="regular-input" name="regular" value="normal value">
+        </div>
+        
+        <div class="form-group">
+            <label for="autocomplete-test">Autocomplete Input:</label>
+            <!-- This simulates the Django-rendered autocomplete widget -->
+            <autocomplete-input 
+                id="autocomplete-test"
+                name="autocomplete_field"
+                endpoint="/api/autocomplete"
+                data-value-field="id"
+                data-label-field="name"
+                exportparts="input">
+                <template shadowrootmode="open">
+                    <style>
+                        :host {
+                            position: relative;
+                            display: block;
+                        }
+                        input {
+                            width: 100%;
+                            padding: 8px;
+                            font-size: 14px;
+                            border: 1px solid #ddd;
+                            box-sizing: border-box;
+                        }
+                        .results {
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            right: 0;
+                            background: white;
+                            border: 1px solid #ddd;
+                            border-top: none;
+                            max-height: 200px;
+                            overflow-y: auto;
+                            display: none;
+                            z-index: 1000;
+                        }
+                        .result-item {
+                            padding: 8px;
+                            cursor: pointer;
+                        }
+                        .result-item:hover,
+                        .result-item.active {
+                            background-color: #f0f0f0;
+                        }
+                    </style>
+                    <!-- Note: No name attribute on this input! -->
+                    <input type="text" 
+                           part="input"
+                           placeholder="Start typing to search...">
+                    <div class="results"></div>
+                </template>
+            </autocomplete-input>
+        </div>
+        
+        <input type="submit" value="Submit Form">
+    </form>
+
+    <h2>Form Submission Result:</h2>
+    <div id="output">Form not submitted yet...</div>
+
+    <script>
+        // Minimal autocomplete implementation for testing
+        class AutocompleteInput extends HTMLElement {
+            static formAssociated = true;
+            
+            constructor() {
+                super();
+                this._internals = this.attachInternals();
+                this.input = this.shadowRoot.querySelector('input');
+                this.resultsContainer = this.shadowRoot.querySelector('.results');
+                this.selectedValue = null;
+                
+                // Mock data for testing
+                this.mockData = [
+                    { id: '123', name: 'Test Item One' },
+                    { id: '456', name: 'Test Item Two' },
+                    { id: '789', name: 'Test Item Three' }
+                ];
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                this.input.addEventListener('input', (e) => {
+                    if (e.target.value.length >= 2) {
+                        this.showResults();
+                    } else {
+                        this.hideResults();
+                    }
+                });
+                
+                this.input.addEventListener('blur', () => {
+                    setTimeout(() => this.hideResults(), 200);
+                });
+            }
+            
+            showResults() {
+                const html = this.mockData.map((item, index) => 
+                    `<div class="result-item" data-index="${index}">${item.name}</div>`
+                ).join('');
+                
+                this.resultsContainer.innerHTML = html;
+                this.resultsContainer.style.display = 'block';
+                
+                // Add click handlers
+                this.resultsContainer.querySelectorAll('.result-item').forEach((el, index) => {
+                    el.addEventListener('click', () => this.selectItem(index));
+                });
+            }
+            
+            hideResults() {
+                this.resultsContainer.style.display = 'none';
+            }
+            
+            selectItem(index) {
+                const item = this.mockData[index];
+                this.input.value = item.name;  // Display the label
+                this._internals.setFormValue(item.id);  // Submit the ID
+                this.selectedValue = item.id;
+                this.hideResults();
+                
+                // Dispatch change event
+                this.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            
+            get name() {
+                return this.getAttribute('name');
+            }
+            
+            get value() {
+                return this.selectedValue;
+            }
+        }
+        
+        // Register the custom element
+        customElements.define('autocomplete-input', AutocompleteInput);
+        
+        // Handle form submission
+        document.getElementById('testForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const params = new URLSearchParams(formData);
+            
+            let output = 'Submitted Form Data:\n\n';
+            output += 'URL Parameters: ' + params.toString() + '\n\n';
+            output += 'Individual Fields:\n';
+            
+            for (const [key, value] of params.entries()) {
+                output += `  ${key} = "${value}"\n`;
+            }
+            
+            // Also check what the browser would submit
+            output += '\n\nBrowser Info:\n';
+            output += '  User Agent: ' + navigator.userAgent + '\n';
+            
+            // Check if Safari
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            output += '  Is Safari: ' + (isSafari ? 'Yes' : 'No') + '\n';
+            
+            document.getElementById('output').textContent = output;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safari Form Submission Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        form {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .results {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        
+        .test-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Safari Autocomplete Form Submission Test</h1>
+    
+    <div class="test-info">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Type "test" in the autocomplete field</li>
+            <li>Select an option from the dropdown (e.g., "Test Product - $99.99")</li>
+            <li>Submit the form</li>
+            <li>Check the submitted data - it should only contain the ID value (e.g., "1"), not the display text</li>
+        </ol>
+    </div>
+    
+    <form id="testForm" method="POST" action="#">
+        <div class="form-group">
+            <label for="product">Product:</label>
+            <autocomplete-input 
+                id="product"
+                name="product" 
+                endpoint="/api/products"
+                data-value-field="value"
+                data-label-field="label"
+                exportparts="input">
+            </autocomplete-input>
+        </div>
+        
+        <div class="form-group">
+            <label for="normalInput">Normal Input (for comparison):</label>
+            <input type="text" id="normalInput" name="normalInput" value="test value">
+        </div>
+        
+        <button type="submit">Submit Form</button>
+    </form>
+    
+    <h2>Form Submission Results:</h2>
+    <div id="results" class="results">Waiting for form submission...</div>
+    
+    <script type="module">
+        // Mock the autocomplete component for testing
+        class AutocompleteInput extends HTMLElement {
+            static formAssociated = true;
+            
+            constructor() {
+                super();
+                this._internals = this.attachInternals();
+                
+                // Attach shadow DOM
+                const shadow = this.attachShadow({ mode: 'open' });
+                
+                // Create the internal structure
+                shadow.innerHTML = `
+                    <style>
+                        :host {
+                            display: block;
+                            position: relative;
+                        }
+                        
+                        input {
+                            width: 100%;
+                            padding: 8px 12px;
+                            border: 1px solid #ccc;
+                            border-radius: 4px;
+                            font-size: 14px;
+                        }
+                        
+                        .dropdown {
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            right: 0;
+                            background: white;
+                            border: 1px solid #ccc;
+                            border-top: none;
+                            max-height: 200px;
+                            overflow-y: auto;
+                            display: none;
+                            z-index: 1000;
+                        }
+                        
+                        .dropdown.show {
+                            display: block;
+                        }
+                        
+                        .option {
+                            padding: 8px 12px;
+                            cursor: pointer;
+                        }
+                        
+                        .option:hover {
+                            background: #f0f0f0;
+                        }
+                    </style>
+                    <input type="text" part="input" placeholder="Type to search...">
+                    <div class="dropdown"></div>
+                `;
+                
+                this.input = shadow.querySelector('input');
+                this.dropdown = shadow.querySelector('.dropdown');
+                
+                // Mock data
+                this.mockData = [
+                    { value: '1', label: 'Test Product - $99.99' },
+                    { value: '2', label: 'Another Test Item - $149.99' },
+                    { value: '3', label: 'Test Service - $199.99' }
+                ];
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                this.input.addEventListener('input', (e) => {
+                    const query = e.target.value;
+                    if (query.length >= 2) {
+                        this.showResults(query);
+                    } else {
+                        this.hideResults();
+                    }
+                });
+                
+                this.input.addEventListener('blur', () => {
+                    setTimeout(() => this.hideResults(), 200);
+                });
+            }
+            
+            showResults(query) {
+                const filtered = this.mockData.filter(item => 
+                    item.label.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                this.dropdown.innerHTML = filtered.map(item => `
+                    <div class="option" data-value="${item.value}" data-label="${item.label}">
+                        ${item.label}
+                    </div>
+                `).join('');
+                
+                this.dropdown.classList.add('show');
+                
+                // Add click handlers
+                this.dropdown.querySelectorAll('.option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        const value = option.getAttribute('data-value');
+                        const label = option.getAttribute('data-label');
+                        this.selectItem(value, label);
+                    });
+                });
+            }
+            
+            hideResults() {
+                this.dropdown.classList.remove('show');
+            }
+            
+            selectItem(value, label) {
+                // Display the label in the input
+                this.input.value = label;
+                
+                // Set the form value to the ID only
+                this._internals.setFormValue(value);
+                
+                this.hideResults();
+                
+                console.log('Selected:', { value, label });
+            }
+            
+            get name() {
+                return this.getAttribute('name');
+            }
+        }
+        
+        // Register the custom element
+        customElements.define('autocomplete-input', AutocompleteInput);
+        
+        // Handle form submission
+        document.getElementById('testForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {};
+            
+            // Collect all form data
+            for (const [key, value] of formData.entries()) {
+                if (data[key]) {
+                    // Handle multiple values with same name
+                    if (!Array.isArray(data[key])) {
+                        data[key] = [data[key]];
+                    }
+                    data[key].push(value);
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            // Display results
+            const resultsEl = document.getElementById('results');
+            resultsEl.textContent = 'Submitted Form Data:\n' + JSON.stringify(data, null, 2);
+            
+            // Also log to console
+            console.log('Form Data:', data);
+            
+            // Check for the Safari bug
+            if (data.product && Array.isArray(data.product)) {
+                resultsEl.textContent += '\n\n⚠️ BUG DETECTED: Multiple values submitted for "product" field!\n';
+                resultsEl.textContent += 'Safari is submitting both the ID and the display text.';
+            } else if (data.product && data.product.includes('$')) {
+                resultsEl.textContent += '\n\n⚠️ BUG DETECTED: Display text submitted instead of ID!\n';
+                resultsEl.textContent += 'The form should only submit the ID value, not the display text.';
+            } else {
+                resultsEl.textContent += '\n\n✅ Form submission looks correct!';
+            }
+        });
+    </script>
+</body>
+</html>

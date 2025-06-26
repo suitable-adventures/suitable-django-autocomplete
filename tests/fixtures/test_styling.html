@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Autocomplete Input Styling Test</title>
+    <style>
+        /* Test CSS Custom Properties */
+        autocomplete-input {
+            --autocomplete-input-padding: 12px 16px;
+            --autocomplete-input-border: 2px solid #4a90e2;
+            --autocomplete-input-border-radius: 8px;
+            --autocomplete-input-font-size: 16px;
+            --autocomplete-input-font-family: 'Arial', sans-serif;
+            --autocomplete-input-color: #333;
+            --autocomplete-input-background: #f8f9fa;
+            --autocomplete-input-focus-border-color: #2c5aa0;
+            --autocomplete-input-focus-box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+        }
+
+        /* Test CSS ::part() styling */
+        .part-styled::part(input) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+        /* Test host class styling */
+        .custom-autocomplete {
+            margin: 20px 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h2>Autocomplete Input Styling Tests</h2>
+    
+    <h3>1. CSS Custom Properties Styling</h3>
+    <autocomplete-input 
+        endpoint="/test" 
+        name="test1"
+        exportparts="input">
+        <template shadowrootmode="open">
+            <style>
+                :host {
+                    position: relative;
+                    display: inline-block;
+                    width: 100%;
+                }
+                
+                input {
+                    width: var(--autocomplete-input-width, 100%);
+                    padding: var(--autocomplete-input-padding, 8px 12px);
+                    border: var(--autocomplete-input-border, 1px solid #ccc);
+                    border-radius: var(--autocomplete-input-border-radius, 4px);
+                    font-size: var(--autocomplete-input-font-size, 14px);
+                    font-family: var(--autocomplete-input-font-family, inherit);
+                    color: var(--autocomplete-input-color, inherit);
+                    background-color: var(--autocomplete-input-background, white);
+                    box-sizing: border-box;
+                }
+                
+                input:focus {
+                    outline: var(--autocomplete-input-focus-outline, none);
+                    border-color: var(--autocomplete-input-focus-border-color, #007bff);
+                    box-shadow: var(--autocomplete-input-focus-box-shadow, 0 0 0 2px rgba(0, 123, 255, 0.25));
+                }
+            </style>
+            
+            <input type="text" 
+                   part="input"
+                   placeholder="Styled with CSS custom properties">
+        </template>
+    </autocomplete-input>
+
+    <h3>2. CSS ::part() Styling</h3>
+    <autocomplete-input 
+        class="part-styled"
+        endpoint="/test" 
+        name="test2"
+        exportparts="input">
+        <template shadowrootmode="open">
+            <style>
+                :host {
+                    position: relative;
+                    display: inline-block;
+                    width: 100%;
+                }
+                
+                input {
+                    width: var(--autocomplete-input-width, 100%);
+                    padding: var(--autocomplete-input-padding, 8px 12px);
+                    border: var(--autocomplete-input-border, 1px solid #ccc);
+                    border-radius: var(--autocomplete-input-border-radius, 4px);
+                    font-size: var(--autocomplete-input-font-size, 14px);
+                    font-family: var(--autocomplete-input-font-family, inherit);
+                    color: var(--autocomplete-input-color, inherit);
+                    background-color: var(--autocomplete-input-background, white);
+                    box-sizing: border-box;
+                }
+                
+                input:focus {
+                    outline: var(--autocomplete-input-focus-outline, none);
+                    border-color: var(--autocomplete-input-focus-border-color, #007bff);
+                    box-shadow: var(--autocomplete-input-focus-box-shadow, 0 0 0 2px rgba(0, 123, 255, 0.25));
+                }
+            </style>
+            
+            <input type="text" 
+                   part="input"
+                   placeholder="Styled with ::part()">
+        </template>
+    </autocomplete-input>
+
+    <h3>3. Default Styling (No external CSS)</h3>
+    <autocomplete-input 
+        endpoint="/test" 
+        name="test3"
+        exportparts="input">
+        <template shadowrootmode="open">
+            <style>
+                :host {
+                    position: relative;
+                    display: inline-block;
+                    width: 100%;
+                }
+                
+                input {
+                    width: var(--autocomplete-input-width, 100%);
+                    padding: var(--autocomplete-input-padding, 8px 12px);
+                    border: var(--autocomplete-input-border, 1px solid #ccc);
+                    border-radius: var(--autocomplete-input-border-radius, 4px);
+                    font-size: var(--autocomplete-input-font-size, 14px);
+                    font-family: var(--autocomplete-input-font-family, inherit);
+                    color: var(--autocomplete-input-color, inherit);
+                    background-color: var(--autocomplete-input-background, white);
+                    box-sizing: border-box;
+                }
+                
+                input:focus {
+                    outline: var(--autocomplete-input-focus-outline, none);
+                    border-color: var(--autocomplete-input-focus-border-color, #007bff);
+                    box-shadow: var(--autocomplete-input-focus-box-shadow, 0 0 0 2px rgba(0, 123, 255, 0.25));
+                }
+            </style>
+            
+            <input type="text" 
+                   part="input"
+                   placeholder="Default styling (fallback values)">
+        </template>
+    </autocomplete-input>
+</body>
+</html>
